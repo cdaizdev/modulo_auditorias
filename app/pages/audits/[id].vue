@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
-import { mockTemplates } from '#imports';
 
 const route = useRoute();
 const auditId = route.params.id as string;
@@ -27,7 +26,7 @@ const fetchAuditData = async () => {
 
 		audit.value = data;
 	} catch (e: any) {
-		error.value = "La auditoría no existe o el servidor no responde.";
+		error.value = e;
 	} finally {
 		loading.value = false;
 	}

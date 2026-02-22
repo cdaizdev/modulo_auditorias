@@ -1,7 +1,7 @@
 //Definimos los datos de base que usaremos para generar auditorías.
 const departments = ['Compras', 'Ventas', 'Seguridad', 'RRHH', 'Operaciones', 'Calidad'];
 
-const auditors: { [key: string]: string } = {
+const auditors = {
     compras: 'Julia Vila',
     ventas: 'Elena Gómez',
     seguridad: 'Marcos Sanz',
@@ -13,9 +13,8 @@ const auditors: { [key: string]: string } = {
 /**
  * Plantillas, cada plantilla tiene 10 evaluaciones
  */
-export const templates = 
-[
-  {
+const templates = [
+    {
         id: 'tpl_1',
         name: 'ISO 27001 Base',
         process: 'Seguridad',
@@ -125,7 +124,7 @@ export const templates =
     }
 ];
 
-const statuses: string[] = ['DRAFT', 'IN_PROGRESS', 'DONE', 'BLOCKED'];
+const statuses = ['DRAFT', 'IN_PROGRESS', 'DONE', 'BLOCKED'];
 
 
 /**
@@ -133,7 +132,7 @@ const statuses: string[] = ['DRAFT', 'IN_PROGRESS', 'DONE', 'BLOCKED'];
  * @param array
  * @returns 
  */
-function getRandomElement(array: string[]) {
+function getRandomElement(array) {
     return array[Math.floor(Math.random() * array.length)];
 }
 
@@ -169,12 +168,11 @@ const generateLimitDate = () => new Date(Date.now() + Math.random() * (new Date(
  * @param {*} count 
  * @returns 
  */
-export const generateAudits = (count: number) => {
+const generateAudits = (count) => {
     return Array.from({ length: count }, (_, i) => {
         const {status, progress} = generateRandomStatus();
 
-        const process: string = getRandomElement(departments) || '';
-        const auditorName = auditors[process.toLowerCase()] || 'Default User';
+        const process = getRandomElement(departments);
 
         return {
             id: `audit_${1001 + i}`,
@@ -184,7 +182,7 @@ export const generateAudits = (count: number) => {
             progress: progress,
             owner: {
                 id: `u_${(i % departments.length) + 1}`,
-                name: auditorName
+                name: auditors[process.toLowerCase()] || 'Alfonso'
             },
             targetDate: generateLimitDate(),
             updatedAt: new Date().toISOString(),

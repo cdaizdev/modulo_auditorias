@@ -1,7 +1,5 @@
 // app/composables/useApi.ts
-import { simulateNetwork } from "#imports";
-
-const templates = ref(mockTemplates);
+import { simulateNetwork, templates } from "#imports";
 
 /**
  * Centraliza y encapsula la lógica reactiva de las peticiones a la API
@@ -66,7 +64,7 @@ export const useApi = () => {
 
     const getTemplates = async () => {
         await simulateNetwork()
-        return templates.value
+        return templates
     }
 
     return {

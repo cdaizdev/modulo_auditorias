@@ -1,75 +1,76 @@
 // server/utils/storage.ts
 /**
  * Esta utilidad genera los mockups y los almacena en la memoria de Node 
- * mientras la aplicación esté ejecutandose
+ * mientras la aplicación esté ejecutandose. Actúa además como capa de datos, simulando operaciones de lectura
+ * escritura en base de datos.
  */
-import { generateMockAudits, mockTemplates } from '~/utils/mockdata';
+import { generateAudits, templates } from '~/utils/mockdata';
 
 let auditsDb: any[] = [];
 let templatesDb: any[] = [];
 
 export const getDb = () => {
   if (auditsDb.length === 0) {
-    auditsDb = generateMockAudits(60).sort((a, b) => {
+    auditsDb = generateAudits(60).sort((a, b) => {
       const dateA = new Date(a.targetDate.split('/').reverse().join('-'));
       const dateB = new Date(b.targetDate.split('/').reverse().join('-'));
       return dateA.getTime() - dateB.getTime();
-    });
-
-    const templateDb = getTemplatesDb();
-
-    auditsDb.forEach(audit => {
-      const template = templateDb.find(t => t.id === audit.templateId);
-
-      if (template) {
-        audit.checks = template.checks.map((check: any) => ({
-          ...check
-        }));
-      } else {
-        audit.checks = [];
-      }
-    });
-
-    // Generamos el estado inicial de los checks
-    auditsDb.forEach(audit => {
-      if (!audit.checks || audit.checks.length === 0) return;
-
-      const totalChecks = audit.checks.length;
-      const completed = Math.round((audit.progress / 100) * totalChecks);
-
-      // Inicialmente todos en PENDING
-      audit.checks.forEach((check: any) => {
-        check.status = 'PENDING';
-        check.loading = false;
-      });
-
-      if (audit.status === 'DONE') {
-        audit.checks.forEach((check: any) => {
-          check.status = 'SUCCESS';
-        });
-      }
-
-      else if (audit.status === 'BLOCKED') {
-        for (let i = 0; i < completed; i++) {
-          audit.checks[i].status = 'SUCCESS';
-        }
-
-        // Forzamos al menos un fallo si hay progreso
-        if (completed > 0) {
-          audit.checks[completed - 1].status = 'FAILED';
-        }
-      }
-
-      else if (audit.status === 'IN_PROGRESS') {
-        for (let i = 0; i < completed; i++) {
-          audit.checks[i].status = 'SUCCESS';
-        }
-      }
     });
   }
 
   return auditsDb;
 };
+
+export const getAuditById = (id: string) => {
+  const templateDb = getTemplatesDb();
+
+  const db = getDb();
+  let audit = db.find(a => a.id === id);
+
+  const template = templateDb.find(t => t.id === audit.templateId);
+
+  if (template) {
+    audit.checks = template.checks.map((check: any) => ({
+      ...check
+    }));
+  } else {
+    audit.checks = [];
+  }
+  if (!audit.checks || audit.checks.length === 0) return;
+
+  const totalChecks = audit.checks.length;
+  const completed = Math.round((audit.progress / 100) * totalChecks);
+
+  // Inicialmente todos en PENDING
+  audit.checks.forEach((check: any) => {
+    check.status = 'PENDING';
+    check.loading = false;
+  });
+
+  if (audit.status === 'DONE') {
+    audit.checks.forEach((check: any) => {
+      check.status = 'SUCCESS';
+    });
+  }
+
+  else if (audit.status === 'BLOCKED') {
+    for (let i = 0; i < completed; i++) {
+      audit.checks[i].status = 'SUCCESS';
+    }
+
+    // Forzamos al menos un fallo si hay progreso
+    if (completed > 0) {
+      audit.checks[completed - 1].status = 'FAILED';
+    }
+  }
+
+  else if (audit.status === 'IN_PROGRESS') {
+    for (let i = 0; i < completed; i++) {
+      audit.checks[i].status = 'SUCCESS';
+    }
+  }
+  return audit;
+}
 
 export const updateDb = (id: string, updates: any) => {
   const index = auditsDb.findIndex(a => a.id === id);
@@ -97,7 +98,7 @@ export const updateDb = (id: string, updates: any) => {
  */
 export const getTemplatesDb = () => {
   if (templatesDb.length === 0) {
-    templatesDb = [...mockTemplates];
+    templatesDb = [...templates];
   }
   return templatesDb;
 };
