@@ -7,7 +7,7 @@ export const simulateNetwork = async () => {
         const delay = Math.floor(Math.random() * (1200 - 300 + 1)) + 300
         await new Promise(resolve => setTimeout(resolve, delay))
 
-        const shouldFail = Math.random() < 0.0
+        const shouldFail = Math.random() < 0.15
         if (shouldFail) {
             throw new Error("Error de conexión con el servidor. Por favor, reintente.")
         }

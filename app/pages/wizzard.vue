@@ -35,7 +35,7 @@ const handleCreate = async () => {
     isSubmitting.value = true;
     error.value = null;
 
-    const selectedTpl = mockTemplates.find(t => t.id === form.templateId);
+    const selectedTpl = templates.find(t => t.id === form.templateId);
 
     try {
         const newAuditData = {
@@ -97,7 +97,7 @@ const handleCreate = async () => {
                             <label class="text-sm font-medium text-slate-700">Proceso / Depto.</label>
                             <select v-model="form.process" class="border rounded-lg p-2 bg-white">
                                 <option value="" disabled>Selecciona uno</option>
-                                <option v-for="p in processes" :key="p" :value="p">{{ p }}</option>
+                                <option v-for="p in departments" :key="p" :value="p">{{ p }}</option>
                             </select>
                         </div>
                         <AppInput v-model="form.targetDate" type="date" label="Fecha Límite" />
@@ -115,7 +115,7 @@ const handleCreate = async () => {
                     <h2 class="text-2xl font-bold text-slate-800">Selección de plantilla</h2>
                     <p class="text-slate-600">Selecciona las opciones para finalizar el proceso:</p>
                     <div class="grid gap-3 overflow-y-scroll">
-                        <div v-for="tpl in mockTemplates" :key="tpl.id" @click="form.templateId = tpl.id"
+                        <div v-for="tpl in templates" :key="tpl.id" @click="form.templateId = tpl.id"
                             :class="['p-4 border-2 rounded-lg cursor-pointer transition-all',
                                 form.templateId === tpl.id ? 'border-blue-600 bg-blue-50' : 'border-slate-100 hover:border-slate-200']">
                             <p class="font-medium"

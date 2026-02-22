@@ -18,9 +18,11 @@ export default defineEventHandler(async (event) => {
 async function simulateAuditProcess(audit: any, prob: number) {
   if (!audit || !audit.checks) return;
   audit.status = 'RUNNING';
+  console.log('simulating...')
 
   for (const check of audit.checks) {
     if (check.status === 'SUCCESS' || check.status === 'FAILED') continue;
+    console.log(check.status);
 
     // FASE: QUEUED -> RUNNING
     check.loading = true;
@@ -30,7 +32,7 @@ async function simulateAuditProcess(audit: any, prob: number) {
 
     await new Promise(resolve => setTimeout(resolve, 1200));
 
-    // FASE: RUNNING -> OK/KO
+    // FASE: RUNNING -> SUCCESS/FAILED
     const isSuccess = Math.random() > prob;
     check.status = isSuccess ? 'SUCCESS' : 'FAILED';
     check.loading = false;

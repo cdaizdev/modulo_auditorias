@@ -69,8 +69,8 @@ export const useApi = () => {
 
     return {
         getAudits,
-        getAuditById,
         createAudit,
+        getAuditById,
         patchAudit,
         getTemplates,
         isLoading,

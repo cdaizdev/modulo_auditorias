@@ -1,36 +1,36 @@
 // server/api/audits/[id].get.ts
 
-import { getAuditById } from "~~/server/utils/storage";
+import { getAuditDBById } from "~~/server/utils/storage";
+import { simulateNetwork } from "~/utils/network";
 
 export default defineEventHandler(async (event) => {
   try {
-    const idParam = getRouterParam(event, 'id');
+    const idParam = getRouterParam(event, 'id')?.trim();
 
-    // 1. Validación inicial del ID
     if (!idParam) {
       throw createError({
         statusCode: 400,
-        statusMessage: 'El ID proporcionado no es un número válido.',
+        statusMessage: 'El ID de auditoría es obligatorio.',
       });
     }
-
-    const audit: any = await getAuditById(idParam);
     
-    // 2. Validación de existencia
+    const audit = await getAuditDBById(idParam);
+    
     if (!audit) {
       throw createError({
         statusCode: 404,
-        statusMessage: `La auditoría con ID ${idParam} no existe en el servidor.`,
+        statusMessage: `No se encontró la auditoría con código: ${idParam}`,
       });
     }
-
+    
     return audit;
 
   } catch (error: any) {
-    // 3. Captura de errores personalizados y genéricos
+    if (error.statusCode) throw error;
+
     throw createError({
-      statusCode: error.statusCode || 500,
-      statusMessage: error.statusMessage || error.message || 'Error interno del servidor',
+      statusCode: 500,
+      statusMessage: error.message || 'Error interno del servidor',
     });
   }
 });

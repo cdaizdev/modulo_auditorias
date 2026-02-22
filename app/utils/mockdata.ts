@@ -1,5 +1,5 @@
 //Definimos los datos de base que usaremos para generar auditorías.
-const departments = ['Compras', 'Ventas', 'Seguridad', 'RRHH', 'Operaciones', 'Calidad'];
+export const departments = ['Compras', 'Ventas', 'Seguridad', 'RRHH', 'Operaciones', 'Calidad'];
 
 const auditors: { [key: string]: string } = {
     compras: 'Julia Vila',

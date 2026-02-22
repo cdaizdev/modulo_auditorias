@@ -21,7 +21,7 @@ export const getDb = () => {
   return auditsDb;
 };
 
-export const getAuditById = (id: string) => {
+export const getAuditDBById = (id: string) => {
   const templateDb = getTemplatesDb();
 
   const db = getDb();
@@ -58,7 +58,6 @@ export const getAuditById = (id: string) => {
       audit.checks[i].status = 'SUCCESS';
     }
 
-    // Forzamos al menos un fallo si hay progreso
     if (completed > 0) {
       audit.checks[completed - 1].status = 'FAILED';
     }
@@ -69,6 +68,9 @@ export const getAuditById = (id: string) => {
       audit.checks[i].status = 'SUCCESS';
     }
   }
+
+  audit.templateName = template.name;
+  
   return audit;
 }
 
