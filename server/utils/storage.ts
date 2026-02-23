@@ -105,35 +105,3 @@ export const getTemplatesDb = () => {
   return templatesDb;
 };
 
-export const getTemplateById = (id: string) => {
-  const db = getTemplatesDb();
-  return db.find(t => t.id === id) || null;
-};
-
-export const updateTemplateDb = (id: string, updates: any) => {
-  const db = getTemplatesDb();
-  const index = db.findIndex(t => t.id === id);
-  if (index !== -1) {
-    db[index] = {
-      ...db[index],
-      ...updates,
-      updatedAt: new Date().toISOString()
-    };
-    return db[index];
-  }
-  return null;
-};
-
-/**
- * Agrega un nuevo template a la base de datos
- */
-export const createTemplateDb = (template: any) => {
-  const db = getTemplatesDb();
-  const newTemplate = {
-    ...template,
-    id: `tpl_${db.length + 1}`,
-    updatedAt: new Date().toISOString()
-  };
-  db.push(newTemplate);
-  return newTemplate;
-};

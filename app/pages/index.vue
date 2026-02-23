@@ -1,181 +1,82 @@
 <script setup lang="ts">
 import { ref, watch, computed } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-
-// 1. Hooks de Nuxt y API
-const route = useRoute();
-const router = useRouter();
-const { getAudits } = useApi();
-
-const audits = ref<any[]>([]);
-const loading = ref(true);
-const error = ref<string | null>(null);
-const total = ref(0);
-
-const columns = [
-	{ key: 'name', label: 'Nombre / ID' },
-	{ key: 'status', label: 'Estado' },
-	{ key: 'progress', label: 'Progreso', class: 'w-48' },
-	{ key: 'owner', label: 'Responsable' },
-	{ key: 'targetDate', label: 'Fecha límite' }
-];
-
-const page = computed(() => Number(route.query.page) || 1);
-const pageSize = ref(10);
-const selectedStatus = computed(() => (route.query.status as string) || '');
-
-const from = computed(() => {
-	if (total.value === 0) return 0;
-	return (page.value - 1) * pageSize.value + 1;
-});
-
-const to = computed(() => {
-	const currentEnd = page.value * pageSize.value;
-	return currentEnd > total.value ? total.value : currentEnd;
-});
-
-const loadData = async () => {
-	loading.value = true;
-	error.value = null;
-
-	try {
-		const response = await getAudits({
-			page: page.value,
-			pageSize: pageSize.value,
-			status: selectedStatus.value
-		});
-
-		audits.value = response.items || [];
-		total.value = response.total || 0;
-	} catch (e: any) {
-		error.value = e.message || 'Error al cargar las auditorías';
-	} finally {
-		loading.value = false;
-		if (import.meta.client) {
-			window.scrollTo({ top: 0, behavior: 'smooth' });
-		}
-	}
-};
-
-// Watcher Maestro: Si la URL cambia (página o filtro), recargamos datos
-watch(
-	() => route.query,
-	() => loadData(),
-	{ immediate: true, deep: true }
-);
-
-// Métodos para cambiar estado (actualizan la URL)
-const changePage = (newPage: number) => {
-	router.push({
-		query: { ...route.query, page: newPage.toString() }
-	});
-};
-
-const handleFilter = (status: string) => {
-	router.push({
-		query: { ...route.query, status: status || undefined, page: '1' }
-	});
-};
+definePageMeta({
+  layout: false
+})
 </script>
 
 <template>
-	<div class="space-y-6">
-		<div class="flex flex-wrap items-center justify-between gap-4 mb-6">
-			<h1 class="text-xl md:text-2xl font-bold text-slate-800">
-				Auditorías
-			</h1>
-			<div class="flex items-center gap-2 ml-auto">
-				<AppFilter :model-value="selectedStatus" @update:model-value="handleFilter" />
-				<AppButton @click="$router.push('/wizzard')">
-					<span>+</span>
-					<span class="hidden md:inline">Nueva Auditoría</span>
-					<span class="inline md:hidden font-medium">Nueva</span>
-				</AppButton>
-			</div>
-		</div>
+    <div class="min-h-screen bg-slate-50 flex flex-col items-center justify-center px-6 py-12">
+        <div
+            class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-green-100 text-green-700 text-sm font-medium mb-6 animate-bounce">
+            <span class="relative flex h-2 w-2">
+                <span
+                    class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
+            </span>
+            Nuxt 3 + Nitro Engine
+        </div>
 
-		<div class="md:hidden">
-			<div v-if="loading">
-				<AppCard v-for="n in 5" :key="n" :item="{}" loading />
-			</div>
-			<div v-else>
-				<AppCard v-for="audit in audits" :key="audit.id" :item="audit"
-					@click="(audit) => $router.push(`/audits/${audit.id}`)"></AppCard>
-			</div>
-		</div>
+        <h1 class="text-5xl md:text-7xl font-extrabold text-slate-900 text-center tracking-tight mb-4">
+            Sistema de <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-500">Auditorías Pro</span>
+        </h1>
 
-		<div class="hidden md:block">
-			<div v-if="error" class="bg-red-50 border border-red-200 p-8 rounded-xl text-center">
-				<p class="text-red-600 font-medium mb-4">{{ error }}</p>
-				<AppButton @click="loadData" variant=danger>
-					Reintentar carga
-				</AppButton>
-			</div>
+        <p class="text-lg text-slate-600 text-center max-w-2xl mb-10">
+            Una aplicación de alto rendimiento diseñada para la gestión técnica de procesos internos,
+            optimizada con una arquitectura de datos en tiempo real.
+        </p>
 
-			<div v-else class="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
-				<AppTable :columns="columns" :items="audits" :loading="loading" :error="error" @retry="loadData"
-					@row-click="(audit) => $router.push(`/audits/${audit.id}`)">
-					<template #cell-name="{ item }">
-						<div class="font-bold text-slate-800">{{ item.name }}</div>
-						<div class="text-xs text-slate-400">{{ item.id }}</div>
-					</template>
-					<template #cell-status="{ item }">
-						<AppBadge :variant="item.status">{{ item.status }}</AppBadge>
-					</template>
-					<template #cell-progress="{ item }">
-						<AppProgressBar :progress="item.progress"></AppProgressBar>
-					</template>
-					<template #cell-owner="{ item }">
-						{{ item.owner.name }}
-					</template>
-				</AppTable>
-			</div>
-		</div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl w-full mb-12">
+            <div
+                class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:border-blue-300 transition-colors">
+                <div class="w-10 h-10 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M13 10V3L4 14h7v7l9-11h-7z" />
+                    </svg>
+                </div>
+                <h3 class="font-bold text-slate-800 mb-2">Nitro API Mocks</h3>
+                <p class="text-sm text-slate-500 italic">Generación dinámica de 80+ registros con latencia simulada para una experiencia realista.</p>
+            </div>
 
-		<div v-if="!loading && !error && total > 0"
-			class="flex flex-col sm:flex-row justify-between items-center gap-4 text-sm text-slate-500 mt-6">
-			<p class="font-medium">
-				Mostrando <span class="text-slate-900">{{ from }}-{{ to }}</span> de <span class="text-slate-900">{{
-					total
-				}}</span> resultados
-			</p>
-			<nav class="flex items-center justify-center space-x-4 bg-gray-50 p-4 rounded-full shadow-inner w-fit mx-auto"
-				aria-label="Navegación de resultados">
-				<div class="flex items-center border-r border-gray-200 pr-4 gap-1">
-					<button @click="changePage(1)" :disabled="page === 1"
-						class="p-2 text-xs font-bold uppercase tracking-tighter text-gray-400 hover:text-blue-600 disabled:opacity-30 disabled:hover:text-gray-400 transition-all">
-						Inicio
-					</button>
-					<button @click="changePage(page - 1)" :disabled="page === 1"
-						class="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-gray-200 shadow-sm hover:border-blue-500 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
-						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-						</svg>
-					</button>
-				</div>
-				<div class="flex items-center gap-2">
-					<template v-for="n in [page, page + 1, page + 2]" :key="n">
-						<button v-if="n <= Math.ceil(total / pageSize)" @click="changePage(n)" :class="['w-10 h-10 rounded-full text-sm font-bold transition-all duration-300',
-							page === n ? 'bg-blue-600 text-white scale-110 shadow-lg ring-4 ring-blue-100'
-								: 'bg-transparent text-gray-500 hover:bg-white hover:shadow-sm hover:text-blue-600']">
-							{{ n }}
-						</button>
-					</template>
-					<span v-if="page + 2 < Math.ceil(total / pageSize)" class="text-gray-300 px-1 font-mono">···</span>
-				</div>
-				<div class="flex items-center border-l border-gray-200 pl-4 gap-1">
-					<button @click="changePage(page + 1)" :disabled="page * pageSize >= total"
-						class="flex items-center justify-center w-10 h-10 rounded-full bg-white border border-gray-200 shadow-sm hover:border-blue-500 hover:text-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all">
-						<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-							<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-						</svg>
-					</button>
-					<button @click="changePage(Math.ceil(total / pageSize))" :disabled="page * pageSize >= total"
-						class="p-2 text-xs font-bold uppercase tracking-tighter text-gray-400 hover:text-blue-600 disabled:opacity-30 disabled:hover:text-gray-400 transition-all">
-						Fin
-					</button>
-				</div>
-			</nav>
-		</div>
-	</div>
+            <div
+                class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:border-blue-300 transition-colors">
+                <div class="w-10 h-10 bg-indigo-100 text-indigo-600 rounded-lg flex items-center justify-center mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                </div>
+                <h3 class="font-bold text-slate-800 mb-2">Real-time Streaming</h3>
+                <p class="text-sm text-slate-500 italic">Ejecución de auditorías mediante flujos de datos asíncronos para evitar recargas de página.</p>
+            </div>
+
+            <div
+                class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 hover:border-blue-300 transition-colors">
+                <div class="w-10 h-10 bg-slate-100 text-slate-600 rounded-lg flex items-center justify-center mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24"
+                        stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                </div>
+                <h3 class="font-bold text-slate-800 mb-2">TypeScript Core</h3>
+                <p class="text-sm text-slate-500 italic">Tipado estricto en toda la aplicación para asegurar la integridad de los procesos.</p>
+            </div>
+        </div>
+
+        <div class="flex gap-4">
+            <NuxtLink to="/audits"
+                class="px-8 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all shadow-lg shadow-blue-200">
+                Explorar Auditorías
+            </NuxtLink>
+            <a href="https://github.com/cdaizdev/modulo_auditorias.git" target="_blank"
+                class="px-8 py-3 bg-white border border-slate-300 text-slate-700 font-semibold rounded-xl hover:bg-slate-50 transition-all">
+                Ver Repositorio
+            </a>
+        </div>
+    </div>
 </template>
