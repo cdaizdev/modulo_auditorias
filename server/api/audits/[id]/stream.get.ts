@@ -4,8 +4,8 @@ import { getDb, updateDb } from "#imports";
 const config = useRuntimeConfig();
 
 // Revisar
-const delay = Number(config.public.auditDelay);
-const prob = Number(config.public.auditProb);
+const delay = Number(config.public.checkDelay);
+const prob = Number(config.public.checkProb);
 
 //Cuándo se llama?
 export default defineEventHandler((event) => {

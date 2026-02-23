@@ -3,8 +3,8 @@ import { getDb, updateDb } from "#imports";
 
 const config = useRuntimeConfig();
 
-const failureProbability = Number(config.public.auditProb);
-const delay = Number(config.public.auditDelay);
+const failureProbability = Number(config.public.checkProb);
+const DELAY = Number(config.public.checkDelay);
 
 // Revisar hay acciones que ya se realizan en el stream.
 export default defineEventHandler(async (event) => {
@@ -40,7 +40,7 @@ async function simulateAuditProcess(audit: any, prob: number) {
     check.status = 'running';
 
     updateAuditProgress(audit.id);
-    await new Promise(resolve => setTimeout(resolve, delay));
+    await new Promise(resolve => setTimeout(resolve, DELAY));
 
     updateAuditProgress(audit.id);
   }
