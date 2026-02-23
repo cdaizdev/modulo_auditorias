@@ -41,31 +41,31 @@ export const getAuditDBById = (id: string) => {
   const totalChecks = audit.checks.length;
   const completed = Math.round((audit.progress / 100) * totalChecks);
 
-  // Inicialmente todos en PENDING
+  // Inicialmente todos en pending
   audit.checks.forEach((check: any) => {
-    check.status = 'PENDING';
+    check.status = 'pending';
     check.loading = false;
   });
 
-  if (audit.status === 'DONE') {
+  if (audit.status === 'done') {
     audit.checks.forEach((check: any) => {
-      check.status = 'SUCCESS';
+      check.status = 'success';
     });
   }
 
-  else if (audit.status === 'BLOCKED') {
+  else if (audit.status === 'blocked') {
     for (let i = 0; i < completed; i++) {
-      audit.checks[i].status = 'SUCCESS';
+      audit.checks[i].status = 'success';
     }
 
     if (completed > 0) {
-      audit.checks[completed - 1].status = 'FAILED';
+      audit.checks[completed - 1].status = 'failed';
     }
   }
 
-  else if (audit.status === 'IN_PROGRESS') {
+  else if (audit.status === 'in_progress') {
     for (let i = 0; i < completed; i++) {
-      audit.checks[i].status = 'SUCCESS';
+      audit.checks[i].status = 'success';
     }
   }
 

@@ -13,10 +13,10 @@ const isOpen = ref(false);
 // 2. Opciones para el dropdown
 const options = [
   { label: 'Todos los estados', value: '' },
-  { label: 'Finalizados', value: 'DONE' },
-  { label: 'En progreso', value: 'IN_PROGRESS' },
-  { label: 'Borrador', value: 'DRAFT' },
-  { label: 'Bloqueados', value: 'BLOCKED' },
+  { label: 'Finalizados', value: 'done' },
+  { label: 'En progreso', value: 'in_progress' },
+  { label: 'Borrador', value: 'draft' },
+  { label: 'Bloqueados', value: 'blocked' },
 ];
 
 // 3. Referencia reactiva para la etiqueta visual

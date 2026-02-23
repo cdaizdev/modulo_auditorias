@@ -34,12 +34,12 @@ npm run preview
 - El usuario accede al panel principal donde se muestran las auditorias
 - Puede navegar entre las diferentes páginas, si recarga el navegador se mantendrá en la página que estaba visualizando.
 - La página que visita se muestra en la url por ejemplo: "?page=6"
-- El usuario puede filtrar los resultados por el estado de progreso (Finalizados, en progreso y bloqueados), el filtro se muestra en la url: "status=BLOCKED&page=1".
+- El usuario puede filtrar los resultados por el estado de progreso (Finalizados, en progreso y bloqueados), el filtro se muestra en la url: "status=blocked&page=1".
 - En la página principal hay un botón para crear una nueva auditoría. Al pulsarlo le dirige al wizzard de dos pasos, que no se puede completar sin
 rellenar los datos necesarios. 
 - Al completar el paso 1 se pasa al paso dos que consiste en elegir una plantilla de auditoría. Al pulsar finalizar se redirige a la página de checklist
-- En el checklist se muestra la información introducida por el usuario, en esta página tiene un botón que al pulsarlo simula la ejecución de la auditoría, la cual puede tener dos resultados "SUCCESS" o "FAIL" con una probabilidad del 20% de que sea "fail".
-- Si la ejecución de la auditoría falla se queda bloqueada, si la auditoriá es exitosa se marca como "DONE", al acceder al listado puede ver la nueva auditoría con su resultado.
+- En el checklist se muestra la información introducida por el usuario, en esta página tiene un botón que al pulsarlo simula la ejecución de la auditoría, la cual puede tener dos resultados "success" o "FAIL" con una probabilidad del 20% de que sea "fail".
+- Si la ejecución de la auditoría falla se queda bloqueada, si la auditoriá es exitosa se marca como "done", al acceder al listado puede ver la nueva auditoría con su resultado.
 
 
 ## Diseño UI escogido

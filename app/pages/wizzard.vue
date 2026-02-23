@@ -44,7 +44,7 @@ const handleCreate = async () => {
             process: form.process,
             standard: form.standard,
             targetDate: form.targetDate,
-            status: 'DRAFT',
+            status: 'draft',
             progress: 0,
             owner: { name: 'Default User' }, //hardcode
             templateId: form.templateId,

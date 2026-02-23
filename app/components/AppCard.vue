@@ -29,7 +29,7 @@ defineEmits(['click']);
             <div class="grid grid-cols-2 gap-y-2 text-sm text-slate-500">
                 <div>
                     <span class="block text-[10px] uppercase tracking-wider font-semibold text-slate-400">Proceso</span>
-                    <AppBadge name="process" :item="item">{{ item.process }}</AppBadge>
+                    <AppBadge text="process" item="gray"></AppBadge>
                 </div>
                 <div class="text-right">
                     <span class="block text-[10px] uppercase tracking-wider font-semibold text-slate-400">Fecha</span>

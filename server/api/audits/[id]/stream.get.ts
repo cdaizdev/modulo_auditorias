@@ -34,14 +34,14 @@ export default defineEventHandler((event) => {
     for (let i = 0; i < audit.checks.length; i++) {
       const check = audit.checks[i];
 
-      // Marcar el check como RUNNING, los anteriores como SUCCESS/FAILED, los siguientes como QUEUED
+      // Marcar el check como running, los anteriores como success/failed, los siguientes como QUEUED
       audit.checks.forEach((c: any, idx: any) => {
-        if (idx < i && !['SUCCESS', 'FAILED'].includes(c.status)) c.status = 'SUCCESS';
-        if (idx === i) c.status = 'RUNNING';
-        if (idx > i && !['SUCCESS', 'FAILED'].includes(c.status)) c.status = 'QUEUED';
+        if (idx < i && !['success', 'failed'].includes(c.status)) c.status = 'success';
+        if (idx === i) c.status = 'running';
+        if (idx > i && !['success', 'failed'].includes(c.status)) c.status = 'QUEUED';
       });
 
-      audit.status = 'RUNNING';
+      audit.status = 'running';
       audit.progress = Math.round((i / audit.checks.length) * 100);
       updateDb(id, audit);
       send({ status: audit.status, progress: audit.progress, checks: audit.checks });
@@ -49,9 +49,9 @@ export default defineEventHandler((event) => {
       // Simular tiempo de ejecución
       await new Promise((resolve) => setTimeout(resolve, 1200));
 
-      // Marcar check actual como SUCCESS o FAILED aleatoriamente
+      // Marcar check actual como success o failed aleatoriamente
       const isSuccess = Math.random() > 0.35;
-      check.status = isSuccess ? 'SUCCESS' : 'FAILED';
+      check.status = isSuccess ? 'success' : 'failed';
 
       audit.progress = Math.round(((i + 1) / audit.checks.length) * 100);
       updateDb(id, audit);
@@ -59,8 +59,8 @@ export default defineEventHandler((event) => {
     }
 
     // Finalizar auditoría
-    const hasFailed = audit.checks.some((c: any) => c.status === 'FAILED');
-    audit.status = hasFailed ? 'REVIEW_REQUIRED' : 'DONE';
+    const hasFailed = audit.checks.some((c: any) => c.status === 'failed');
+    audit.status = hasFailed ? 'REVIEW_REQUIRED' : 'done';
     audit.progress = 100;
     updateDb(id, audit);
     send({ status: audit.status, progress: audit.progress, checks: audit.checks });

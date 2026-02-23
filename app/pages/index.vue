@@ -104,7 +104,8 @@ const handleFilter = (status: string) => {
 				<AppCard v-for="n in 5" :key="n" :item="{}" loading />
 			</div>
 			<div v-else>
-				<AppCard v-for="audit in audits" :key="audit.id" :item="audit" @click="(audit) => $router.push(`/audits/${audit.id}`)"></AppCard>
+				<AppCard v-for="audit in audits" :key="audit.id" :item="audit"
+					@click="(audit) => $router.push(`/audits/${audit.id}`)"></AppCard>
 			</div>
 		</div>
 
@@ -124,7 +125,7 @@ const handleFilter = (status: string) => {
 						<div class="text-xs text-slate-400">{{ item.id }}</div>
 					</template>
 					<template #cell-status="{ item }">
-						<AppBadge :item="item"> {{ item.status }} </AppBadge>
+						<AppBadge :variant="item.status">{{ item.status }}</AppBadge>
 					</template>
 					<template #cell-progress="{ item }">
 						<AppProgressBar :progress="item.progress"></AppProgressBar>

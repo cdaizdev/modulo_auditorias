@@ -21,8 +21,7 @@ const loadData = async () => {
 	loading.value = true;
 	error.value = null;
 	try {
-		audit.value = await getAuditById(auditId);;
-		console.log(audit.value);
+		audit.value = await getAuditById(auditId);
 	} catch (err: any) {
 		console.error(err);
 		error.value = 'No se pudo cargar la auditoría';
@@ -54,7 +53,7 @@ const runAudit = async () => {
 				audit.value.checks = update.checks;
 			}
 
-			if (['DONE', 'REVIEW_REQUIRED'].includes(update.status)) {
+			if (['done', 'REVIEW_REQUIRED'].includes(update.status)) {
 				isExecuting.value = false;
 				evtSource?.close();
 				evtSource = null;
@@ -78,27 +77,6 @@ const runAudit = async () => {
 onUnmounted(() => {
 	evtSource?.close();
 });
-
-// --- CLASES ---
-const getStatusClass = (status: string) => {
-	const map: Record<string, string> = {
-		SUCCESS: 'bg-green-100 text-green-700',
-		FAILED: 'bg-red-100 text-red-700',
-		RUNNING: 'bg-orange-100 text-orange-700 animate-pulse',
-		DONE: 'bg-green-100 text-green-700',
-		REVIEW_REQUIRED: 'bg-red-100 text-red-700',
-	};
-	return map[status] || 'bg-blue-100 text-blue-700';
-};
-
-const getPriorityClass = (priority: string) => {
-	const map: Record<string, string> = {
-		HIGH: 'bg-red-100 text-red-700',
-		MEDIUM: 'bg-orange-100 text-orange-700',
-		LOW: 'bg-green-100 text-green-700',
-	};
-	return map[priority] || 'bg-blue-100 text-blue-700';
-};
 
 // --- CARGA INICIAL ---
 loadData();
@@ -149,86 +127,101 @@ loadData();
 			</div>
 		</div>
 
-	<!-- ERROR -->
-	<div v-else-if="error" class="bg-red-50 border border-red-200 p-8 rounded-xl text-center">
-				<p class="text-red-600 font-medium mb-4">{{ error }}</p>
-				<AppButton @click="loadData" variant=danger>
-					Reintentar carga
-				</AppButton>
-			</div>
+		<!-- ERROR -->
+		<div v-else-if="error" class="bg-red-50 border border-red-200 p-8 rounded-xl text-center">
+			<p class="text-red-600 font-medium mb-4">{{ error }}</p>
+			<AppButton @click="loadData" variant=danger>
+				Reintentar carga
+			</AppButton>
+		</div>
 
-	<!-- AUDITORÍA -->
-	<div v-else>
-		<section class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
-			<div class="flex justify-between items-center mb-4">
-				<h1 class="text-2xl font-bold">{{ audit.name }}</h1>
-				<span :class="['px-3 py-1 rounded-full text-xs font-bold uppercase', getStatusClass(audit.status)]">
-					{{ audit.status }}
-				</span>
-			</div>
-
-			<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
-				<div>
-					<p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Responsable</p>
-					<p class="text-sm font-medium text-slate-700">{{ audit.owner?.name || 'Sin asignar' }}</p>
+		<!-- AUDITORÍA -->
+		<div v-else>
+			<section class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
+				<div class="flex justify-between items-center mb-4">
+					<h1 class="text-2xl font-bold">{{ audit.name }}</h1>
+					<AppBadge :variant="audit.status">{{ audit.status }}</AppBadge>
 				</div>
-				<div>
-					<p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Fecha Límite</p>
-					<p class="text-sm font-medium text-slate-700">{{ audit.targetDate || 'Sin fecha' }}</p>
-				</div>
-			</div>
 
-			<div class="flex justify-between items-center">
-				<span class="text-sm font-bold">Progreso</span>
-				<span class="text-2xl font-black text-blue-600">{{ audit.progress }}%</span>
-			</div>
-			<div class="w-full bg-slate-100 h-3 rounded-full overflow-hidden mb-4">
-				<div class="bg-blue-600 h-full transition-all duration-500" :style="{ width: audit.progress + '%' }">
-				</div>
-			</div>
-
-			<button class="w-full py-2 px-4 rounded text-white font-bold"
-				:class="isExecuting || ['DONE', 'REVIEW_REQUIRED'].includes(audit.status) ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'"
-				:disabled="isExecuting || ['DONE', 'REVIEW_REQUIRED'].includes(audit.status)" @click="runAudit">
-				<span v-if="isExecuting">Ejecutando auditoría</span>
-				<span v-else-if="audit.status === 'DONE'">Auditoría Finalizada</span>
-				<span v-else-if="audit.status === 'REVIEW_REQUIRED'">Revisión requerida</span>
-				<span v-else>Ejecutar Auditoría</span>
-			</button>
-		</section>
-
-		<!-- CHECKS -->
-		<section class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm mt-4">
-			<h2 class="text-xl font-bold mb-2 border-b">{{ audit.templateName }}</h2>
-			<h2 class="mb-2">Puntos de Control</h2>
-			<div v-for="check in audit.checks" :key="check.id" class="flex justify-between items-center py-2 border-b">
-				<div class="flex items-center gap-3">
-					<!-- Indicador de estado -->
-					<div class="w-2.5 h-2.5 rounded-full relative">
-						<template v-if="check.status === 'RUNNING'">
-							<svg class="animate-spin h-4 w-4 text-orange-500" xmlns="http://www.w3.org/2000/svg"
-								fill="none" viewBox="0 0 24 24">
-								<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
-									stroke-width="4"></circle>
-								<path class="opacity-75" fill="currentColor"
-									d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
-								</path>
-							</svg>
-						</template>
-						<template v-else>
-							<div :class="[
-								'w-2.5 h-2.5 rounded-full',
-								check.status === 'SUCCESS' ? 'bg-green-500' : check.status === 'FAILED' ? 'bg-red-500' : 'bg-slate-300'
-							]"></div>
-						</template>
+				<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+					<div>
+						<p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Responsable</p>
+						<p class="text-sm font-medium text-slate-700">{{ audit.owner?.name || 'Sin asignar' }}</p>
 					</div>
-					<span>{{ check.title }}</span>
+					<div>
+						<p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Fecha Límite</p>
+						<p class="text-sm font-medium text-slate-700">{{ audit.targetDate || 'Sin fecha' }}</p>
+					</div>
 				</div>
-				<span :class="['px-2 py-1 rounded text-xs font-bold', getPriorityClass(check.priority?.toUpperCase())]">
-					{{ check.priority?.toUpperCase() }}
-				</span>
-			</div>
-		</section>
-	</div>
+
+				<div class="flex justify-between items-center">
+					<span class="text-sm font-bold">Progreso</span>
+					<span class="text-2xl font-black text-blue-600">{{ audit.progress }}%</span>
+				</div>
+				<div class="w-full bg-slate-100 h-3 rounded-full overflow-hidden mb-4">
+					<div class="bg-blue-600 h-full transition-all duration-500"
+						:style="{ width: audit.progress + '%' }">
+					</div>
+				</div>
+
+				<button class="w-full py-2 px-4 rounded text-white font-bold"
+					:class="isExecuting || ['done', 'REVIEW_REQUIRED'].includes(audit.status) ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'"
+					:disabled="isExecuting || ['done', 'REVIEW_REQUIRED'].includes(audit.status)" @click="runAudit">
+					<span v-if="isExecuting">Ejecutando auditoría</span>
+					<span v-else-if="audit.status === 'done'">Auditoría Finalizada</span>
+					<span v-else-if="audit.status === 'REVIEW_REQUIRED'">Revisión requerida</span>
+					<span v-else>Ejecutar Auditoría</span>
+				</button>
+			</section>
+
+			<!-- CHECKS -->
+			<section class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm mt-4">
+				<h2 class="text-xl font-bold mb-2 border-b">{{ audit.templateName }}</h2>
+				<h2 class="mb-2">Puntos de Control</h2>
+				<div v-for="check in audit.checks" :key="check.id"
+					class="flex justify-between items-center py-2 border-b">
+					<div class="flex items-center gap-3">
+						<!-- Indicador de estado -->
+						<div class="w-2.5 h-2.5 rounded-full relative">
+							<template v-if="check.status === 'running'">
+								<svg class="animate-spin h-4 w-4 text-orange-500" xmlns="http://www.w3.org/2000/svg"
+									fill="none" viewBox="0 0 24 24">
+									<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+										stroke-width="4"></circle>
+									<path class="opacity-75" fill="currentColor"
+										d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+									</path>
+								</svg>
+							</template>
+							<template v-else>
+								<div
+									:class="['w-2.5 h-2.5 rounded-full', check.status === 'success' ? 'bg-green-500' : check.status === 'failed' ? 'bg-red-500' : 'bg-slate-300']">
+								</div>
+							</template>
+						</div>
+						<span>{{ check.title }}</span>
+
+						<AppBadge :variant="check.priority">
+							{{ check.priority?.toUpperCase() }}
+						</AppBadge>
+					</div>
+					<AppBadge :variant="check.status">
+						<div class="flex justify-center items-center gap-2">
+							<template v-if="check.status === 'running'">
+								<svg class="animate-spin h-4 w-4 text-orange-500" xmlns="http://www.w3.org/2000/svg"
+									fill="none" viewBox="0 0 24 24">
+									<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor"
+										stroke-width="4"></circle>
+									<path class="opacity-75" fill="currentColor"
+										d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z">
+									</path>
+								</svg>
+							</template>
+							{{ check.status?.toUpperCase() }}
+						</div>
+					</AppBadge>
+				</div>
+			</section>
+		</div>
 	</div>
 </template>
