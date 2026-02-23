@@ -163,21 +163,43 @@ loadData();
 						:style="{ width: audit.progress + '%' }">
 					</div>
 				</div>
-
-				<button class="w-full py-2 px-4 rounded text-white font-bold"
-					:class="isExecuting || ['done', 'REVIEW_REQUIRED'].includes(audit.status) ? 'bg-gray-400' : 'bg-blue-600 hover:bg-blue-700'"
-					:disabled="isExecuting || ['done', 'REVIEW_REQUIRED'].includes(audit.status)" @click="runAudit">
-					<span v-if="isExecuting">Ejecutando auditoría</span>
-					<span v-else-if="audit.status === 'done'">Auditoría Finalizada</span>
-					<span v-else-if="audit.status === 'REVIEW_REQUIRED'">Revisión requerida</span>
-					<span v-else>Ejecutar Auditoría</span>
-				</button>
+				<div class="flex justify-end">
+					<AppButton
+						:variant="isExecuting || ['done', 'REVIEW_REQUIRED'].includes(audit.status) ? 'secondary' : 'primary'"
+						:disabled="isExecuting || ['done', 'REVIEW_REQUIRED'].includes(audit.status)" @click="runAudit">
+						<span v-if="isExecuting">Ejecutando auditoría</span>
+						<span v-else-if="audit.status === 'done'">Auditoría Finalizada</span>
+						<span v-else-if="audit.status === 'REVIEW_REQUIRED'">Revisión requerida</span>
+						<span v-else>Ejecutar Auditoría</span>
+					</AppButton>
+				</div>
 			</section>
 
 			<!-- CHECKS -->
-			<section class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm mt-4">
-				<h2 class="text-xl font-bold mb-2 border-b">{{ audit.templateName }}</h2>
-				<h2 class="mb-2">Puntos de Control</h2>
+			<section class="bg-white border border-slate-200 rounded-2xl shadow-sm mt-6 overflow-hidden p-4">
+				<div class="bg-slate-50/50 border-b border-slate-200 p-6">
+					<div class="flex items-center justify-between gap-4">
+						<div>
+							<p class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-1">
+								Plantilla de Auditoría
+							</p>
+							<h2 class="text-2xl font-extrabold text-slate-800 tracking-tight">
+								{{ audit.templateName }}
+							</h2>
+						</div>
+					</div>
+				</div>
+				<div class="p-6">
+					<div class="flex items-center gap-2 mb-4">
+						<div class="p-1.5 bg-blue-50 text-blue-600 rounded-lg">
+							<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none"
+								stroke="currentColor" stroke-width="2">
+								<path d="M9 11l3 3L22 4m-2 6v10a2 2 0 01-2 2H4a2 2 0 01-2-2V6a2 2 0 012-2h12.5" />
+							</svg>
+						</div>
+						<h3 class="text-lg font-bold text-slate-700">Puntos de Control</h3>
+					</div>
+				</div>
 				<div v-for="check in audit.checks" :key="check.id"
 					class="flex justify-between items-center py-2 border-b">
 					<div class="flex items-center gap-3">

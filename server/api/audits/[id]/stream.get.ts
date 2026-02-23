@@ -1,6 +1,13 @@
 // server/api/audits/[id]/stream.get.ts
 import { getDb, updateDb } from "#imports";
 
+const config = useRuntimeConfig();
+
+// Revisar
+const delay = Number(config.public.auditDelay);
+const prob = Number(config.public.auditProb);
+
+//Cuándo se llama?
 export default defineEventHandler((event) => {
   const id = getRouterParam(event, 'id') || '';
   const db = getDb();
@@ -45,12 +52,11 @@ export default defineEventHandler((event) => {
       audit.progress = Math.round((i / audit.checks.length) * 100);
       updateDb(id, audit);
       send({ status: audit.status, progress: audit.progress, checks: audit.checks });
-
       // Simular tiempo de ejecución
-      await new Promise((resolve) => setTimeout(resolve, 1200));
+      await new Promise((resolve) => setTimeout(resolve, delay));
 
       // Marcar check actual como success o failed aleatoriamente
-      const isSuccess = Math.random() > 0.35;
+      const isSuccess = Math.random() > prob;
       check.status = isSuccess ? 'success' : 'failed';
 
       audit.progress = Math.round(((i + 1) / audit.checks.length) * 100);

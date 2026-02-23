@@ -7,13 +7,11 @@ const route = useRoute();
 const router = useRouter();
 const { getAudits } = useApi();
 
-// 2. Estado reactivo
 const audits = ref<any[]>([]);
 const loading = ref(true);
 const error = ref<string | null>(null);
 const total = ref(0);
 
-// 3. Configuración de columnas
 const columns = [
 	{ key: 'name', label: 'Nombre / ID' },
 	{ key: 'status', label: 'Estado' },
@@ -22,12 +20,10 @@ const columns = [
 	{ key: 'targetDate', label: 'Fecha límite' }
 ];
 
-// 4. Parámetros de paginación sincronizados con la URL
 const page = computed(() => Number(route.query.page) || 1);
 const pageSize = ref(10);
 const selectedStatus = computed(() => (route.query.status as string) || '');
 
-// 5. Cálculos de Rango
 const from = computed(() => {
 	if (total.value === 0) return 0;
 	return (page.value - 1) * pageSize.value + 1;
@@ -38,7 +34,6 @@ const to = computed(() => {
 	return currentEnd > total.value ? total.value : currentEnd;
 });
 
-// 6. Función de carga de datos
 const loadData = async () => {
 	loading.value = true;
 	error.value = null;
@@ -62,14 +57,14 @@ const loadData = async () => {
 	}
 };
 
-// 7. Watcher Maestro: Si la URL cambia (página o filtro), recargamos datos
+// Watcher Maestro: Si la URL cambia (página o filtro), recargamos datos
 watch(
 	() => route.query,
 	() => loadData(),
 	{ immediate: true, deep: true }
 );
 
-// 8. Métodos para cambiar estado (actualizan la URL)
+// Métodos para cambiar estado (actualizan la URL)
 const changePage = (newPage: number) => {
 	router.push({
 		query: { ...route.query, page: newPage.toString() }
@@ -160,12 +155,9 @@ const handleFilter = (status: string) => {
 				</div>
 				<div class="flex items-center gap-2">
 					<template v-for="n in [page, page + 1, page + 2]" :key="n">
-						<button v-if="n <= Math.ceil(total / pageSize)" @click="changePage(n)" :class="[
-							'w-10 h-10 rounded-full text-sm font-bold transition-all duration-300',
-							page === n
-								? 'bg-blue-600 text-white scale-110 shadow-lg ring-4 ring-blue-100'
-								: 'bg-transparent text-gray-500 hover:bg-white hover:shadow-sm hover:text-blue-600'
-						]">
+						<button v-if="n <= Math.ceil(total / pageSize)" @click="changePage(n)" :class="['w-10 h-10 rounded-full text-sm font-bold transition-all duration-300',
+							page === n ? 'bg-blue-600 text-white scale-110 shadow-lg ring-4 ring-blue-100'
+								: 'bg-transparent text-gray-500 hover:bg-white hover:shadow-sm hover:text-blue-600']">
 							{{ n }}
 						</button>
 					</template>

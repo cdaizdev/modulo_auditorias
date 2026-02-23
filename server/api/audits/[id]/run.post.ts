@@ -1,11 +1,16 @@
 
 import { getDb, updateDb } from "#imports";
-import { debug } from "~/utils/debug";
 
+const config = useRuntimeConfig();
+
+const failureProbability = Number(config.public.auditProb);
+const delay = Number(config.public.auditDelay);
+
+// Revisar hay acciones que ya se realizan en el stream.
 export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id') || '';
-  const failureProbability = 0.35;
-  const audit = getDb().find(a => a.id === id);
+  
+  const audit = getAuditDBById(id);
 
   if (!audit) throw createError({ statusCode: 404, statusMessage: 'Auditoría no encontrada' });
 
@@ -18,24 +23,25 @@ export default defineEventHandler(async (event) => {
 
 async function simulateAuditProcess(audit: any, prob: number) {
   if (!audit || !audit.checks) return;
-  audit.status = 'running';
-  for (const check of audit.checks) {
-    if (check.status === 'success' || check.status === 'failed') continue;
-    debug(check.status);
 
+  //Poner cada check pendiente en 'queued'
+  audit.checks.forEach((item: any) => {
+    if (item.status == 'pending') item.status = 'queued';
+    updateAuditProgress(audit.id);
+  });
+
+  audit.status = 'running';
+  const checksToProcess = audit.checks.filter((c: any) => c.status === 'queued');
+
+  for (const check of checksToProcess) {
+    if (check.status === 'success' || check.status === 'failed') continue;
     // FASE: QUEUED -> running
     check.loading = true;
     check.status = 'running';
 
     updateAuditProgress(audit.id);
+    await new Promise(resolve => setTimeout(resolve, delay));
 
-    await new Promise(resolve => setTimeout(resolve, 1200));
-
-    // FASE: running -> success/failed
-    const isSuccess = Math.random() > prob;
-    check.status = isSuccess ? 'success' : 'failed';
-    check.loading = false;
-    
     updateAuditProgress(audit.id);
   }
   finalizeAudit(audit.id);
@@ -44,7 +50,7 @@ async function simulateAuditProcess(audit: any, prob: number) {
 function updateAuditProgress(auditId: string) {
   const audit = getDb().find(a => a.id === auditId);
   if (!audit) return;
-  
+
   const completed = audit.checks.filter((c: any) => ['success', 'failed'].includes(c.status)).length;
 
   const progress = Math.round((completed / audit.checks.length) * 100);

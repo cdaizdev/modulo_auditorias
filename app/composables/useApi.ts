@@ -1,6 +1,5 @@
 // app/composables/useApi.ts
 import { simulateNetwork, templates } from "#imports";
-
 /**
  * Centraliza y encapsula la lógica reactiva de las peticiones a la API
  * @returns any

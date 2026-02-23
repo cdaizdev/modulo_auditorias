@@ -5,5 +5,11 @@ export default defineNuxtConfig({
   devtools: { enabled: true },
   future: {
     compatibilityVersion: 4,
+  },
+  runtimeConfig: {
+    public: {
+      auditProb: process.env.NUXT_PUBLIC_AUDIT_PROBABILITY || 0.5,
+      auditDelay: process.env.NUXT_PUBLIC_AUDIT_DELAY || 1000,
+    }
   }
 })
