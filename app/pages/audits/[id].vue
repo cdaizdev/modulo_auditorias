@@ -23,8 +23,9 @@ const loadData = async () => {
 	try {
 		audit.value = await getAuditById(auditId);
 	} catch (err: any) {
-		console.error(err);
-		error.value = 'No se pudo cargar la auditoría';
+		const message = err.data?.message || err.statusMessage || 'Error de red o error interno';
+		error.value = message;
+		console.log(err.message);
 	} finally {
 		loading.value = false;
 		if (import.meta.client) {
@@ -139,7 +140,12 @@ loadData();
 		<div v-else>
 			<section class="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm">
 				<div class="flex justify-between items-center mb-4">
-					<h1 class="text-2xl font-bold">{{ audit.name }}</h1>
+					<div class="flex flex-col gap-2">
+						<h1 class="text-2xl font-bold">
+							{{ audit.name }}
+						</h1>
+						<span class="text-sm text-[10px] font-bold text-slate-400 uppercase tracking-widest">{{ audit.id }}</span>
+					</div>
 					<AppBadge :variant="audit.status">{{ audit.status }}</AppBadge>
 				</div>
 

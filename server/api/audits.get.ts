@@ -4,7 +4,6 @@ export default defineEventHandler(async (event) => {
   const page = Number(query.page) || 1;
   const pageSize = Number(query.pageSize) || 10;
   const status = query.status as string;
-
   const db = getDb();
   let filtered = [...db];
 

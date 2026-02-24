@@ -194,3 +194,58 @@ export const generateAudits = (count: number) => {
     });
 };
 
+/**
+ * Genera la auditoría relacionada con la plantilla a través de su id.
+ * @param id 
+ * @returns 
+ */
+export const generateAuditResults = () => {
+  const auditsDb = getDb();
+
+  return auditsDb.map((audit: any) => {
+    const template = templates.find((t: any) => t.id === audit.templateId);
+    
+    if (!template) {
+      return { auditId: audit.id, error: "Template not found", checks: [] };
+    }
+
+    const totalChecks = template.checks.length;
+    const completedCount = Math.round((audit.progress / 100) * totalChecks);
+
+    const auditChecks = structuredClone(template.checks).map((check: any, index: number) => {
+      let status = 'pending';
+
+      if (audit.status === 'done') {
+        status = 'success';
+      } 
+      else if (audit.status === 'blocked') {
+        if (index < completedCount - 1) {
+          status = 'success';
+        } else if (index === completedCount - 1 && completedCount > 0) {
+          status = 'failed';
+        }
+      } 
+      else if (audit.status === 'in_progress') {
+        if (index < completedCount) {
+          status = 'success';
+        }
+      }
+
+      return {
+        ...check,
+        status,
+        loading: false,
+        lastUpdated: audit.updatedAt || new Date().toISOString()
+      };
+    });
+
+    return {
+      id: `rel-${audit.id}`,
+      auditId: audit.id,
+      templateId: template.id,
+      templateName: template.name,
+      checks: auditChecks
+    };
+  });
+};
+
