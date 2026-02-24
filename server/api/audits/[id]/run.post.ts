@@ -1,76 +1,51 @@
+// server/api/audits/[id]/start.post.ts
+import { getAuditDBById, updateDb } from "#imports";
 
-import { getDb, updateDb } from "#imports";
-
-const config = useRuntimeConfig();
-
-const failureProbability = Number(config.public.checkProb);
-const DELAY = Number(config.public.checkDelay);
-
-// Revisar hay acciones que ya se realizan en el stream.
 export default defineEventHandler(async (event) => {
   const id = getRouterParam(event, 'id') || '';
-  
   const audit = getAuditDBById(id);
+  const config = useRuntimeConfig();
 
-  if (!audit) throw createError({ statusCode: 404, statusMessage: 'Auditoría no encontrada' });
+  const prob = Number(config.public.checkProb);
+  const delay = Number(config.public.checkDelay);
 
-  // 1. Marcar inicio de la auditoría
-  updateDb(id, { status: 'in_progress' });
-  event.waitUntil(simulateAuditProcess(audit, failureProbability));
+  if (!audit) throw createError({ statusCode: 404, message: 'Auditoría no encontrada' });
+  if (audit.status === 'running') return { message: 'Ya está en ejecución' };
 
-  return { message: 'Ejecución iniciada', auditId: id };
+  // 1. Iniciamos el proceso
+  updateDb(id, { status: 'running', progress: 0 });
+
+  // 2. Ejecutamos la simulación en background
+  event.waitUntil(simulateAuditProcess(id, prob, delay));
+
+  return { message: 'Simulación iniciada', auditId: id };
 });
 
-async function simulateAuditProcess(audit: any, prob: number) {
-  if (!audit || !audit.checks) return;
+async function simulateAuditProcess(id: string, prob: number, delay: number) {
+  const audit = getAuditDBById(id);
+  if (!audit) return;
 
-  //Poner cada check pendiente en 'queued'
-  audit.checks.forEach((item: any) => {
-    if (item.status == 'pending') item.status = 'queued';
-    updateAuditProgress(audit.id);
-  });
+  for (let i = 0; i < audit.checks.length; i++) {
+    // Fase: Running
+    audit.checks[i].status = 'running';
+    updateDb(id, { checks: audit.checks, progress: Math.round((i / audit.checks.length) * 100) });
+    
+    await new Promise(r => setTimeout(r, delay));
 
-  audit.status = 'running';
-  const checksToProcess = audit.checks.filter((c: any) => c.status === 'queued');
-
-  for (const check of checksToProcess) {
-    if (check.status === 'success' || check.status === 'failed') continue;
-    // FASE: QUEUED -> running
-    check.loading = true;
-    check.status = 'running';
-
-    updateAuditProgress(audit.id);
-    await new Promise(resolve => setTimeout(resolve, DELAY));
-
-    updateAuditProgress(audit.id);
+    // Fase: Resultado
+    const isSuccess = Math.random() > prob;
+    audit.checks[i].status = isSuccess ? 'success' : 'failed';
+    
+    updateDb(id, { 
+      checks: audit.checks, 
+      progress: Math.round(((i + 1) / audit.checks.length) * 100) 
+    });
   }
-  finalizeAudit(audit.id);
-}
 
-function updateAuditProgress(auditId: string) {
-  const audit = getDb().find(a => a.id === auditId);
-  if (!audit) return;
-
-  const completed = audit.checks.filter((c: any) => ['success', 'failed'].includes(c.status)).length;
-
-  const progress = Math.round((completed / audit.checks.length) * 100);
-
-  updateDb(auditId, {
-    progress,
-    checks: audit.checks
-  });
-}
-
-function finalizeAudit(auditId: string) {
-  const audit = getDb().find(a => a.id === auditId);
-  if (!audit) return;
-
+  // Finalización
   const hasFailed = audit.checks.some((c: any) => c.status === 'failed');
-  const finalStatus = hasFailed ? 'REVIEW_REQUIRED' : 'done';
-
-  updateDb(auditId, {
-    status: finalStatus,
-    progress: 100
+  updateDb(id, { 
+    status: hasFailed ? 'REVIEW_REQUIRED' : 'done', 
+    progress: 100 
   });
-
 }
